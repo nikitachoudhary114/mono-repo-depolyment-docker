@@ -1,8 +1,7 @@
 "use client";
 
-import { prismaClient } from "db/client";
 import { useEffect, useState } from "react";
-import hommme from "./nn"
+
 // --- Types ---
 type User = {
   id: string;
@@ -26,18 +25,15 @@ export default function Home() {
   const [task, setTask] = useState("");
   const [userId, setUserId] = useState("");
 
-  // --- Load all users & todos ---
+  // --- Load all users & todos on mount ---
   useEffect(() => {
     fetch("http://localhost:8080/users")
       .then((res) => res.json())
       .then(setUsers)
       .catch(console.error);
 
-    fetch("http://localhost:8080/todo", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }), // ⚠️ your backend expects userId in body, not ideal
-    })
+    // fetch all todos (no filter if userId is empty)
+    fetch("http://localhost:8080/todo")
       .then((res) => res.json())
       .then(setTodos)
       .catch(console.error);
@@ -50,6 +46,7 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
+
     const res = await fetch("http://localhost:8080/users");
     setUsers(await res.json());
   };
@@ -66,11 +63,9 @@ export default function Home() {
       body: JSON.stringify({ task, userId }),
     });
 
-    const res = await fetch("http://localhost:8080/todo", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify("49f8624f-9f98-4a62-9f35-beda279657fb"),
-    });
+    const res = await fetch(
+      `http://localhost:8080/todo?userId=${encodeURIComponent(userId)}`
+    );
     setTodos(await res.json());
   };
 
@@ -78,15 +73,11 @@ export default function Home() {
   const handleToggleTodo = async (id: string) => {
     await fetch(`http://localhost:8080/todo/${id}`, { method: "PUT" });
 
-    const res = await fetch("http://localhost:8080/todo", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId }),
-    });
+    const res = await fetch(
+      `http://localhost:8080/todo?userId=${encodeURIComponent(userId)}`
+    );
     setTodos(await res.json());
   };
-
-
 
   return (
     <div style={{ padding: "20px" }}>
@@ -117,7 +108,6 @@ export default function Home() {
       <hr />
 
       <h1>Todos</h1>
-      
       <ul>
         {todos.map((t) => (
           <li key={t.id}>

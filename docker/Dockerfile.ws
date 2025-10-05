@@ -2,16 +2,21 @@ FROM oven/bun:1
 
 WORKDIR /usr/src/app
 
-COPY ./package.json /package.json
-COPY ./bun.lock ./bun.lock
-COPY ./packages ./packages
-COPY ./turbo.json ./turbo.json
+# Copy root configs
+COPY package.json ./
+COPY bun.lock ./bun.lock
+COPY turbo.json ./turbo.json
 
-COPY ./apps/ws ./app/ws
+# Copy repo structure
+COPY apps ./apps
+COPY packages ./packages
 
+# Install dependencies
 RUN bun install
+
+# Generate Prisma client
 RUN bun run db:generate
 
 EXPOSE 8081
 
-CMD [ "bun", "run", "start:ws" ]
+CMD ["bun", "run", "start:ws"]
