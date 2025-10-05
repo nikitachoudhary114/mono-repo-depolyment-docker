@@ -2,7 +2,7 @@
 ## push the docker image to docker hub
 ## ssh into our vm and start the new image
 
-name: Continuous Deployment (Prod) (Backend)
+name: Continuous Deployment (Prod) (websocket)
 on:
   push:
     branches: [ main ]
