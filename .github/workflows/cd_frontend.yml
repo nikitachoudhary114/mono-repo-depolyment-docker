@@ -1,0 +1,31 @@
+## build docker file
+## push the docker image to docker hub
+## ssh into our vm and start the new image
+
+name: Continuous Deployment (Prod) (Backend)
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+      - name: Docker login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/Dockerfile.web
+          build-args: | 
+            DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          push: true
+          tags: nikita342/user-app-frontend:${{ github.sha }}
