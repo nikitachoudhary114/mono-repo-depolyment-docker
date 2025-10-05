@@ -1,8 +1,17 @@
 import { prismaClient } from "db/client";
 import express from "express";
+import cors from "cors";
 
-const app = express()
-app.use(express.json())
+const app = express();
+app.use(express.json());
+
+
+app.use(
+  cors({
+    origin: "http://localhost:3000", 
+    credentials: true,
+  })
+);
 
 app.get("/users", (req, res) => {
     prismaClient.user.findMany()
@@ -58,20 +67,16 @@ app.post("/todo", (req, res) => {
 
 
 app.get("/todo", (req, res) => {
-    const { userId } = req.body;
-    prismaClient.todo.findMany({
-        where: {
-          userId: userId,
-        },
-      })
-      .then((todo) => {
-        res.status(200).json(todo);
-      })
-      .catch((err) => {
-        res.status(500).json({ error: err.message });
-      });
+  const { userId } = req.query; // string
 
-})
+  prismaClient.todo
+    .findMany({
+      where: userId ? { userId: String(userId) } : {}, // if no userId, return all todos
+    })
+    .then((todos) => res.status(200).json(todos))
+    .catch((err) => res.status(500).json({ error: err.message }));
+});
+
 
 app.put("/todo/:id", async (req, res) => {
   try {
