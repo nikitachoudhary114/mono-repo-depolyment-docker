@@ -69,6 +69,7 @@ app.post("/todo", (req, res) => {
 app.get("/todo", (req, res) => {
   const { userId } = req.query; // string
 
+  
   prismaClient.todo
     .findMany({
       where: userId ? { userId: String(userId) } : {}, // if no userId, return all todos
